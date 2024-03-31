@@ -1,0 +1,10 @@
+
+
+services:
+    bot:
+        image: "supportive-shade"
+        build: "../src"
+
+        env_file:
+            - path: ./.env
+              required: true
