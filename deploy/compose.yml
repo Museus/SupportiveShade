@@ -8,3 +8,6 @@ services:
         env_file:
             - path: ./.env
               required: true
+
+        volumes:
+          - ./config.toml:/etc/supportive_shade/config.toml
