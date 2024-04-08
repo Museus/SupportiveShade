@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from discord import Emoji, Message, TextChannel
 import logging
+import re
 
 from client import client
 from settings import PersonalBestsSettings
@@ -27,6 +28,8 @@ class HandlePersonalBest(Watcher):
     emoji: Emoji
     channel: TextChannel
     create_thread: bool
+
+    EMOTE_PATTERN = re.compile(r"<:(\S+):\d+>")
 
     def __init__(self, settings: PersonalBestsSettings):
         self.enabled = settings.enabled
@@ -56,9 +59,19 @@ class HandlePersonalBest(Watcher):
         if self.create_thread:
             logger.debug("[HandlePersonalBest] Creating a thread!")
             if message.content:
-                thread_title = message.content[:50]
-                if len(thread_title) < len(message.content):
+                thread_title = message.content
+
+                # Replace emote strings with names
+                thread_title = re.sub(
+                    self.EMOTE_PATTERN, lambda e: ":" + e.group(1) + ":", thread_title
+                )
+
+                # Trim down to 50 characters
+                original_length = len(thread_title)
+                thread_title = thread_title[:50]
+                if len(thread_title) < original_length:
                     thread_title += "..."
+
             else:
                 thread_title = f"Discuss {message.author}'s PB here!"
 
