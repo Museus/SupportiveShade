@@ -19,7 +19,7 @@ class PersonalBestsSettings(BaseModel):
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(toml_file="/etc/supportive_shade/config.toml")
 
-    personal_bests: PersonalBestsSettings
+    personal_bests: list[PersonalBestsSettings]
 
     @classmethod
     def settings_customise_sources(

@@ -1,5 +1,11 @@
-[personal_bests]
+[[personal_bests]]
 enabled = true
-channel_id =
-emoji_id =
+channel_id = 000000000000000000
+emoji_id = 000000000000000000
+create_thread = true
+
+[[personal_bests]]
+enabled = true
+channel_id = 000000000000000000
+emoji_id = 000000000000000000
 create_thread = true

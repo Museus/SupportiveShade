@@ -17,11 +17,17 @@ async def on_ready():
     logger.info(f"We have logged in as {client.user}")
 
     # Register Personal Best Reactions
-    if settings.personal_bests.enabled:
-        logger.info("Initializing Personal Best Reactions...")
+    for pb_settings in settings.personal_bests:
+        if not pb_settings.enabled:
+            continue
+
+        logger.info(
+            "Initializing Personal Best Reactions for channel %s...",
+            pb_settings.channel_id,
+        )
 
         try:
-            pb_handler = HandlePersonalBest(settings.personal_bests)
+            pb_handler = HandlePersonalBest(pb_settings)
         except Exception:
             logger.exception("Failed to initialize Personal Bests handler!")
         else:
