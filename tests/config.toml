@@ -1,0 +1,13 @@
+[speedrun_api]
+    [speedrun_api.validation]
+        [speedrun_api.validation.user]
+        valid_users = "tests/speedrun_api/data/valid_users.json"
+        invalid_users = "tests/speedrun_api/data/invalid_users.json"
+
+    [speedrun_api.test_user]
+    id = "8georwrj"
+    name = "Museus"
+
+    [speedrun_api.test_game]
+    id = "o1y9okr6"
+    name = "Hades"

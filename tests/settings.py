@@ -1,3 +1,4 @@
+import pathlib
 from typing import Tuple, Type
 
 from pydantic import BaseModel
@@ -9,29 +10,35 @@ from pydantic_settings import (
 )
 
 
-class PersonalBestsSettings(BaseModel):
-    enabled: bool
-    channel_id: int
-    emoji_id: int
-    create_thread: bool
+class SpeedrunApiTestUserSettings(BaseModel):
+    id: str
+    name: str
 
 
-class VerifiedRunsSettings(BaseModel):
-    class WatchedLeaderboard(BaseModel):
-        channel_id: int
-        game_name: str
-        src_id: str
+class SpeedrunApiTestGameSettings(BaseModel):
+    id: str
+    name: str
 
-    enabled: bool
-    poll_frequency: int
-    leaderboards: dict[str, WatchedLeaderboard]
+
+class SpeedrunApiValidationUserSettings(BaseModel):
+    valid_users: pathlib.Path
+    invalid_users: pathlib.Path
+
+
+class SpeedrunApiValidationSettings(BaseModel):
+    user: SpeedrunApiValidationUserSettings
+
+
+class SpeedrunApiSettings(BaseModel):
+    test_user: SpeedrunApiTestUserSettings
+    test_game: SpeedrunApiTestGameSettings
+    validation: SpeedrunApiValidationSettings
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(toml_file="/etc/supportive_shade/config.toml")
+    model_config = SettingsConfigDict(toml_file="./tests/config.toml")
 
-    personal_bests: list[PersonalBestsSettings]
-    verified_runs: VerifiedRunsSettings
+    speedrun_api: SpeedrunApiSettings
 
     @classmethod
     def settings_customise_sources(
