@@ -1,0 +1,9 @@
+services:
+    bot:
+        extends:
+            file: compose.yml
+            service: bot
+
+        volumes:
+          - "../src/app:/opt/supportive_shade"
+

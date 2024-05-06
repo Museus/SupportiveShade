@@ -28,7 +28,5 @@ LABEL org.opencontainers.image.authors="Museus <museus@proton.me>"
 LABEL org.opencontainers.title="Supportive Shade"
 LABEL org.opencontainers.image.description="Discord bot for the Hades Speedrunning discord server"
 
-RUN chmod +x start.sh prestart.sh
-
 ENTRYPOINT [ "bash", "-c", "./start.sh" ]
 
