@@ -8,7 +8,6 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
-
 class PersonalBestsSettings(BaseModel):
     enabled: bool
     channel_id: int
@@ -16,22 +15,10 @@ class PersonalBestsSettings(BaseModel):
     create_thread: bool
 
 
-class VerifiedRunsSettings(BaseModel):
-    class WatchedLeaderboard(BaseModel):
-        channel_id: int
-        game_name: str
-        src_id: str
-
-    enabled: bool
-    poll_frequency: int
-    leaderboards: dict[str, WatchedLeaderboard]
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(toml_file="/etc/supportive_shade/config.toml")
 
     personal_bests: list[PersonalBestsSettings]
-    verified_runs: VerifiedRunsSettings
 
     @classmethod
     def settings_customise_sources(
