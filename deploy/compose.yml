@@ -1,9 +1,12 @@
 
-
 services:
     bot:
         image: "supportive-shade"
-        build: "../src"
+        build:
+            context: ../src
+            dockerfile: Dockerfile
+            args:
+                BUILD_TIMESTAMP: "$BUILD_TIMESTAMP"
 
         env_file:
             - path: ./.env
@@ -11,3 +14,8 @@ services:
 
         volumes:
           - ./config.toml:/etc/supportive_shade/config.toml
+          - data:/var/lib/supportive_shade
+
+volumes:
+  data:
+
