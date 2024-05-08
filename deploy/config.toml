@@ -10,3 +10,18 @@ channel_id = 000000000000000000
 emoji_id = 000000000000000000
 create_thread = true
 
+[verified_runs]
+enabled = true
+poll_frequency = 30 # seconds
+
+    [[verified_runs.leaderboards]]
+    game_name = "GAME 1"
+    channel_id = 000000000000000000
+    src_id = "SRC_ID_1"
+    start_timestamp="2024-01-01 00:00:00.000000"
+
+    [[verified_runs.leaderboards]]
+    game_name = "GAME 2"
+    channel_id = 000000000000000000
+    src_id = "SRC_ID_2"
+    start_timestamp="2024-01-01 00:00:00.000000"
