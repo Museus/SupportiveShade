@@ -69,7 +69,7 @@ class User(BaseModel):
     name_style: GradientNameStyle | SolidNameStyle = Field(..., alias="name-style")
     role: str
     signup: str
-    location: Location
+    location: Optional[Location] = None
     twitch: Optional[Social] = None
     hitbox: Optional[Social] = None
     youtube: Optional[Social] = None

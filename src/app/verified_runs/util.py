@@ -13,14 +13,14 @@ def seconds_to_readable(seconds_to_convert):
 
     readable = ""
     if days:
-        readable += f"{days}d"
+        readable += f"{days}d "
     if hours:
-        readable += f"{hours}h"
+        readable += f"{hours}h "
     if minutes:
-        readable += f"{minutes}m"
+        readable += f"{minutes}m "
     if seconds:
-        readable += f"{seconds}s"
+        readable += f"{seconds}s "
     if milliseconds:
-        readable += f"{milliseconds}ms"
+        readable += f"{milliseconds}ms "
 
-    return readable
+    return readable.strip()

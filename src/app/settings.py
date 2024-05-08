@@ -8,6 +8,9 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
+from verified_runs.settings import VerifiedRunsSettings
+
+
 class PersonalBestsSettings(BaseModel):
     enabled: bool
     channel_id: int
@@ -19,6 +22,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(toml_file="/etc/supportive_shade/config.toml")
 
     personal_bests: list[PersonalBestsSettings]
+    verified_runs: VerifiedRunsSettings
 
     @classmethod
     def settings_customise_sources(

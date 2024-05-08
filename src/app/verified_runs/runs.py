@@ -1,15 +1,19 @@
 from datetime import datetime
 import json
 from typing import Any, Mapping
+import logging
 
 import discord
 
 from .api.api import src_api
 from .util import seconds_to_readable
+from .api.schemas import Run
+
+logger = logging.getLogger("discord")
 
 
 class VerifiedRun:
-    run_from_api: Mapping[str, Any]
+    run_from_api: Run
 
     _runner_id: str
     runner: str
@@ -21,31 +25,35 @@ class VerifiedRun:
     _date_played: datetime | None
     _verified_by: str | None
     _date_verified: datetime | None
-    _url: str | None
     category: str | None
     category_id: str | None
 
-    def __init__(self, run_from_api: Mapping[str, Any]):
+    game_variables: dict[str, Any]
+
+    url: str
+
+    def __init__(self, run_from_api: Run, game_variables: dict[str, Any] = None):
         self.run_from_api = run_from_api
-        if not self.run_from_api["status"]["status"] == "verified":
+        if not self.run_from_api.status.status == "verified":
             raise Exception("Tried to parse an unverified run!")
 
-        self.game = self.run_from_api["game"]["data"]["id"]
-        self.category_id = self.run_from_api["category"]["data"]["id"]
-        self.category = self.run_from_api["category"]["data"]["name"]
+        self.game = self.run_from_api.game.data.id
+        self.category_id = self.run_from_api.category.data.id
+        self.category = self.run_from_api.category.data.name
 
         # Get runner info
-        self._runner_id = self.run_from_api["players"]["data"][0]["id"]
+        self._runner_id = self.run_from_api.players.data[0].id
         self.runner = src_api.get_user_name_from_id(self._runner_id)
+        self.runner_url = self.run_from_api.players.data[0].weblink
 
-        self._duration_in_seconds = self.run_from_api["times"]["primary_t"]
+        self._duration_in_seconds = self.run_from_api.times.primary_t
         self.duration = seconds_to_readable(self._duration_in_seconds)
 
-        run_variables = self.run_from_api["values"]
+        run_variables = self.run_from_api.values
         leaderboard_subcategories = {
-            variable["id"]: variable
-            for variable in self.run_from_api["category"]["data"]["variables"]["data"]
-            if variable["is-subcategory"]
+            variable.id: variable
+            for variable in self.run_from_api.category.data.variables.data
+            if variable.is_subcategory
         }
 
         self._subcategories = {
@@ -55,9 +63,9 @@ class VerifiedRun:
         }
 
         self.subcategories = [
-            leaderboard_subcategories[variable_id]["values"]["values"][variable_value][
-                "label"
-            ]
+            leaderboard_subcategories[variable_id]
+            .values.values.get(variable_value)
+            .label
             for variable_id, variable_value in run_variables.items()
             if variable_id in leaderboard_subcategories.keys()
         ]
@@ -66,28 +74,36 @@ class VerifiedRun:
             game=self.game,
             category=self.category_id,
             subcategories=self._subcategories,
+            as_of=self.date_verified,
         )
 
         for idx, run in enumerate(leaderboard):
-            if run["run"]["id"] == self.run_from_api["id"]:
-                self.leaderboard_rank = idx
+            if run["run"]["id"] == self.run_from_api.id:
+                self.leaderboard_rank = idx + 1
                 break
+
+        if not hasattr(self, "leaderboard_rank"):
+            self.leaderboard_rank = 1
 
         self._date_played = None
         self._verified_by = None
 
+        self.game_variables = game_variables or {}
+        self.url = run_from_api.weblink
+
     @property
     def date_played(self):
-        if not hasattr(self, "_date_played"):
-            self._date_played = self.run_from_api["date"]
+        if not self._date_played:
+            self._date_played = self.run_from_api.date
 
         return self._date_played
 
     @property
     def verified_by(self):
-        if not hasattr(self, "_verified_by"):
-            verifier_id = self.run_from_api["status"]["examiner"]
+        if not self._verified_by:
+            verifier_id = self.run_from_api.status.examiner
             self._verified_by = src_api.get_user_name_from_id(verifier_id)
+            logger.info("Got verifier %s" % self._verified_by)
 
         return self._verified_by
 
@@ -95,7 +111,7 @@ class VerifiedRun:
     def date_verified(self):
         if not hasattr(self, "_date_verified"):
             self._date_verified = datetime.strptime(
-                self.run_from_api["status"]["verify-date"], "%Y-%m-%dT%H:%M:%SZ"
+                self.run_from_api.status.verify_date, "%Y-%m-%dT%H:%M:%SZ"
             )
 
         return self._date_verified
@@ -103,8 +119,8 @@ class VerifiedRun:
     @property
     def run_title(self):
         return "%s - %s - %s" % (
-            self.run_from_api["game"]["data"]["names"]["international"],
-            self.run_from_api["category"]["data"]["name"],
+            self.run_from_api.game.data.names.international,
+            self.run_from_api.category.data.name,
             ", ".join(self.subcategories),
         )
 
@@ -113,15 +129,20 @@ class VerifiedRun:
 
         message_embed.set_author(name=self.run_title, icon_url="")
 
-        message_embed.add_field(name="Runner", value=self.runner, inline=True)
+        message_embed.add_field(
+            name="Runner", value=f"[{self.runner}]({self.runner_url})", inline=True
+        )
 
         message_embed.add_field(name="Time", value=self.duration)
         message_embed.add_field(
             name="Leaderboard Rank", value=self.leaderboard_rank, inline=True
         )
 
-        message_embed.add_field(name="Date Played", value=self.duration)
+        message_embed.add_field(name="Date Played", value=self.date_played)
 
+        message_embed.add_field(
+            name="", value=f"[Click here to see the run!]({self.url})"
+        )
         message_embed.set_footer(
             text=f"Verified by {self.verified_by}",
             icon_url="https://www.speedrun.com/images/favicon.png",
@@ -138,8 +159,6 @@ class VerifiedHadesRun(VerifiedRun):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        with open("hades_variables.json") as variables_file:
-            self.game_variables = json.load(variables_file)
 
     @property
     def aspect(self):
@@ -147,14 +166,17 @@ class VerifiedHadesRun(VerifiedRun):
             aspect_variables = {
                 variable["id"]: variable
                 for variable in self.game_variables
-                if variable["name"] != "Aspect"
+                if variable["name"] == "Aspect"
             }
 
-            for variable_id, variable_value in self.run_from_api["values"].items():
+            for variable_id, variable_value in self.run_from_api.values.items():
                 if variable_id in aspect_variables:
                     self._aspect_key = variable_id
                     self._aspect = variable_value
                     break
+
+        if not hasattr(self, "_aspect"):
+            return None
 
         return (self._aspect_key, self._aspect)
 
@@ -167,11 +189,14 @@ class VerifiedHadesRun(VerifiedRun):
                 if variable["name"] not in ["Weapon", "Weapon (OwO)"]
             }
 
-            for variable_id, variable_value in self.run_from_api["values"].items():
+            for variable_id, variable_value in self.run_from_api.values.items():
                 if variable_id in weapon_variables:
                     self._weapon_key = variable_id
                     self._weapon = variable_value
                     break
+
+        if not hasattr(self, "_weapon"):
+            return None
 
         return (self._weapon_key, self._weapon)
 
@@ -184,11 +209,14 @@ class VerifiedHadesRun(VerifiedRun):
                 if variable["name"] == "Aspect"
             }
 
-            for variable_id, variable_value in self.run_from_api["values"].items():
+            for variable_id, variable_value in self.run_from_api.values.items():
                 if variable_id in aspect_variables:
-                    self._aspect_name = self.game_variables[variable_id]["values"][
-                        variable_value
-                    ]["label"]
+                    self._aspect_name = aspect_variables[variable_id]["values"][
+                        "values"
+                    ][variable_value]["label"]
+
+        if not hasattr(self, "_aspect_name"):
+            return "Unknown"
 
         return self._aspect_name
 
@@ -201,11 +229,14 @@ class VerifiedHadesRun(VerifiedRun):
                 if variable["name"] == "Weapon"
             }
 
-            for variable_id, variable_value in self.run_from_api["values"].items():
+            for variable_id, variable_value in self.run_from_api.values.items():
                 if variable_id in weapon_variables:
-                    self._weapon_name = self.game_variables[variable_id]["values"][
-                        variable_value
-                    ]["label"]
+                    self._weapon_name = weapon_variables[variable_id]["values"][
+                        "values"
+                    ][variable_value]["label"]
+
+        if not hasattr(self, "_weapon_name"):
+            return "Unknown"
 
         return self._weapon_name
 
@@ -214,72 +245,81 @@ class VerifiedHadesRun(VerifiedRun):
         if not hasattr(self, "_aspect_rank"):
             if not self.aspect:
                 self._aspect_rank = "-1"
+            else:
+                subcategories_and_aspect = self._subcategories
+                aspect_key, aspect_value = self.aspect
+                logger.info("Filtering aspect %s: %s", aspect_key, aspect_value)
+                subcategories_and_aspect[aspect_key] = aspect_value
 
-            subcategories = self._subcategories
-            aspect_key, aspect_value = self.aspect
-            subcategories[aspect_key] = aspect_value
-
-            if not getattr(self, "_aspect_rank", None):
                 leaderboard = src_api.get_leaderboard(
                     game=self.game,
                     category=self.category_id,
-                    subcategories=self._subcategories,
+                    subcategories=subcategories_and_aspect,
+                    as_of=self.date_verified,
                 )
 
                 for idx, run in enumerate(leaderboard):
-                    if run["run"]["id"] == self.run_from_api["id"]:
-                        self._aspect_rank = idx
+                    if run["run"]["id"] == self.run_from_api.id:
+                        self._aspect_rank = idx + 1
                         break
 
-        return self._aspect_rank
+        return getattr(self, "_aspect_rank", None)
 
     @property
     def weapon_rank(self):
         if not hasattr(self, "_weapon_rank"):
             if not self.weapon:
                 self._weapon_rank = "-1"
+            else:
+                subcategories = self._subcategories
+                weapon_key, weapon_value = self.weapon
+                subcategories[weapon_key] = weapon_value
 
-            subcategories = self._subcategories
-            weapon_key, weapon_value = self.weapon
-            subcategories[weapon_key] = weapon_value
+                if not getattr(self, "_weapon_rank", None):
+                    leaderboard = src_api.get_leaderboard(
+                        game=self.game,
+                        category=self.category_id,
+                        subcategories=self._subcategories,
+                        as_of=self.date_verified,
+                    )
 
-            if not getattr(self, "_weapon_rank", None):
-                leaderboard = src_api.get_leaderboard(
-                    game=self.game,
-                    category=self.category_id,
-                    subcategories=self._subcategories,
-                )
-
-                for idx, run in enumerate(leaderboard):
-                    if run["run"]["id"] == self.run_from_api["id"]:
-                        self._weapon_rank = idx
-                        break
+                    for idx, run in enumerate(leaderboard):
+                        if run["run"]["id"] == self.run_from_api.id:
+                            self._weapon_rank = idx + 1
+                            break
 
         return self._weapon_rank
 
     def to_embed(self) -> discord.Embed:
-        message_embed = discord.Embed(timestamp=self.date_verified)
+        message_embed = discord.Embed(
+            description=f"[Click here to see the run!]({self.url})",
+            timestamp=self.date_verified,
+        )
 
         message_embed.set_author(
             name=self.run_title,
             icon_url="https://www.speedrun.com/static/theme/zr0g008m/favicon.png?v=7f661bb",
         )
 
-        message_embed.add_field(name="Runner", value=self.runner, inline=True)
-        if self.aspect_name:
+        message_embed.add_field(
+            name="Runner", value=f"[{self.runner}]({self.runner_url})", inline=True
+        )
+        if self.aspect_name != "Unknown":
             message_embed.add_field(name="Aspect", value=self.aspect_name, inline=True)
-        elif self.weapon_name:
-            message_embed.add_field(name="Weapon", value=self.aspect_name, inline=True)
+        elif self.weapon_name != "Unknown":
+            message_embed.add_field(name="Weapon", value=self.weapon_name, inline=True)
 
         message_embed.add_field(name="Time", value=self.duration)
         message_embed.add_field(
             name="Leaderboard Rank", value=self.leaderboard_rank, inline=True
         )
-        message_embed.add_field(
-            name="Aspect Rank", value=self.aspect_rank or "Unknown", inline=True
-        )
 
-        message_embed.add_field(name="Date Played", value=self.duration)
+        if self.aspect_name != "Unknown":
+            message_embed.add_field(
+                name="Aspect Rank", value=self.aspect_rank or "Unknown", inline=True
+            )
+
+        message_embed.add_field(name="Date Played", value=self.date_played)
 
         message_embed.set_footer(text=f"Verified by {self.verified_by}", icon_url="")
 

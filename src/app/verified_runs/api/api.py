@@ -1,13 +1,13 @@
 import datetime
 import logging
 from string import Template
-from typing import Mapping
+from typing import Any, Iterator, Mapping
 
 import requests
 
 from . import schemas
 
-logger = logging.getLogger()
+logger = logging.getLogger("discord")
 
 
 class SpeedrunApi:
@@ -27,25 +27,38 @@ class SpeedrunApi:
         return user.names.international or "unknown"
 
     def get_leaderboard(
-        self, game: str, category: str, subcategories: Mapping[str, str] = None
+        self,
+        game: str,
+        category: str,
+        subcategories: Mapping[str, str] = None,
+        as_of: str = None,
     ):
+
         stringified_subcategories = (
             "&".join(
                 [
-                    f"var-{variable[0]}={variable[1]}"
-                    for variable in sorted(subcategories.items())
+                    f"var-{variable_id}={variable_value}"
+                    for variable_id, variable_value in subcategories.items()
                 ]
             )
             if subcategories
             else None
         )
 
-        cache_key = (game, category, stringified_subcategories)
+        cache_key = (game, category, stringified_subcategories, as_of)
 
         if cached_board := self._cached_leaderboards.get(cache_key):
             return cached_board
 
-        url = f"https://www.speedrun.com/api/v1/leaderboards/{game}/category/{category}{('?' + stringified_subcategories) if stringified_subcategories else ''}"
+        params = []
+        if subcategories:
+            params.append(stringified_subcategories)
+
+        if as_of:
+            params.append(f"date={as_of}")
+
+        url = f"https://www.speedrun.com/api/v1/leaderboards/{game}/category/{category}{('?' + '&'.join(params)) if params else ''}"
+        logger.info(url)
         response = requests.get(url).json()
 
         self._cached_leaderboards[cache_key] = response["data"]["runs"]
@@ -62,7 +75,9 @@ class SpeedrunApi:
         response = requests.get(url).json()
         return schemas.Run(**response["data"][0])
 
-    def get_verified_runs(self, game: str, since: datetime.datetime | None):
+    def get_verified_runs(
+        self, game: str, since: datetime.datetime | None
+    ) -> Iterator[schemas.Run]:
         # Any time we're fetching verified runs, we should clear the cached leaderboards
         self._cached_leaderboards = {}
 
@@ -74,24 +89,43 @@ class SpeedrunApi:
 
         verify_date_template = Template("${verify_date}+00:00")
 
+        full_list = []
+        should_break = False
         while True:
+
             response = requests.get(url).json()
             for run in response["data"]:
                 if (not since) or (
                     datetime.datetime.fromisoformat(
-                        verify_date_template.substitute(
-                            verify_date=run["status"]["verify-date"]
-                        )
-                    )
+                        # verify_date_template.substitute(
+                        # verify_date=run["status"]["verify-date"]
+                        run["status"]["verify-date"]
+                        # )
+                    ).replace(tzinfo=datetime.timezone.utc)
                     > since
                 ):
-                    yield schemas.Run(**run)
+                    full_list.append(schemas.Run(**run))
                 else:
-                    return
+                    should_break = True
+                    break
+
+            if should_break:
+                break
 
             for link in response["pagination"]["links"]:
                 if link["rel"] == "next":
                     url = link["uri"]
+
+        for run in reversed(full_list):
+            yield run
+
+    def get_game_variables(self, game: str) -> dict[str, Any]:
+        url = f"https://www.speedrun.com/api/v1/games/{game}/variables"
+
+        try:
+            return requests.get(url).json()["data"]
+        except Exception:
+            return {}
 
 
 src_api = SpeedrunApi()

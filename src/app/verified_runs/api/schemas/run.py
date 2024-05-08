@@ -186,13 +186,13 @@ class Run(BaseModel):
     level: Level
     category: Category
     videos: Videos
-    comment: str
+    comment: Optional[str] = None
     status: Status
     players: Players
     date: str
     submitted: str
     times: Times
     system: System
-    splits: Optional[str] = None
+    splits: Optional[Reference] = None
     values: Optional[dict[str, str]] = None
     links: list[Reference]
