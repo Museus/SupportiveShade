@@ -83,7 +83,7 @@ class VerifiedRun:
                 break
 
         if not hasattr(self, "leaderboard_rank"):
-            self.leaderboard_rank = 1
+            self.leaderboard_rank = -1
 
         self._date_played = None
         self._verified_by = None
@@ -311,12 +311,12 @@ class VerifiedHadesRun(VerifiedRun):
 
         message_embed.add_field(name="Time", value=self.duration)
         message_embed.add_field(
-            name="Leaderboard Rank", value=self.leaderboard_rank, inline=True
+            name="Leaderboard Rank", value=self.leaderboard_rank if self.leaderboard_rank != -1 else "Obsolete", inline=True
         )
 
         if self.aspect_name != "Unknown":
             message_embed.add_field(
-                name="Aspect Rank", value=self.aspect_rank or "Unknown", inline=True
+                name="Aspect Rank", value=self.aspect_rank or "Obsolete", inline=True
             )
 
         message_embed.add_field(name="Date Played", value=self.date_played)
