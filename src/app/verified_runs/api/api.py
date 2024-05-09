@@ -61,7 +61,11 @@ class SpeedrunApi:
         logger.info(url)
         response = requests.get(url).json()
 
-        self._cached_leaderboards[cache_key] = response["data"]["runs"]
+        try:
+            self._cached_leaderboards[cache_key] = response["data"]["runs"]
+        except KeyError:
+            logger.error("Failed to access leaderboard!")
+            self._cached_leaderboards[cache_key] = []
 
         return self._cached_leaderboards[cache_key]
 
