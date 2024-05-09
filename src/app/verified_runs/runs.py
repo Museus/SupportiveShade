@@ -79,7 +79,7 @@ class VerifiedRun:
 
         for idx, run in enumerate(leaderboard):
             if run["run"]["id"] == self.run_from_api.id:
-                self.leaderboard_rank = idx + 1
+                self.leaderboard_rank = run["place"]
                 break
 
         if not hasattr(self, "leaderboard_rank"):
@@ -271,7 +271,7 @@ class VerifiedHadesRun(VerifiedRun):
 
                 for idx, run in enumerate(leaderboard):
                     if run["run"]["id"] == self.run_from_api.id:
-                        self._aspect_rank = idx + 1
+                        self._aspect_rank = run["place"]
                         break
 
         return getattr(self, "_aspect_rank", None)
@@ -296,7 +296,7 @@ class VerifiedHadesRun(VerifiedRun):
 
                     for idx, run in enumerate(leaderboard):
                         if run["run"]["id"] == self.run_from_api.id:
-                            self._weapon_rank = idx + 1
+                            self._weapon_rank = run["place"]
                             break
 
         return self._weapon_rank
