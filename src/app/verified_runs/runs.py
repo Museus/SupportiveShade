@@ -101,9 +101,20 @@ class VerifiedRun:
     @property
     def verified_by(self):
         if not self._verified_by:
+            attempts = 0
             verifier_id = self.run_from_api.status.examiner
-            self._verified_by = src_api.get_user_name_from_id(verifier_id)
-            logger.info("Got verifier %s" % self._verified_by)
+            while not self._verified_by and attempts < 5:
+                attempts += 1
+                try:
+                    self._verified_by = src_api.get_user_name_from_id(verifier_id)
+                    logger.info("Got verifier %s", self._verified_by)
+                except Exception:
+                    self._verified_by = None
+
+            if not self._verified_by:
+                self._verified_by = verifier_id
+                logger.info("Falling back to verifier ID: %s", verifier_id)
+
 
         return self._verified_by
 

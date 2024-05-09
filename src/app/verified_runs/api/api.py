@@ -21,6 +21,7 @@ class SpeedrunApi:
             ).json()["data"]
         except Exception:
             logger.exception("Failed to get user!")
+            raise
 
         user = schemas.User(**user_data)
 
