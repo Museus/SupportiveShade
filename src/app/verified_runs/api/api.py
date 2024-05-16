@@ -32,7 +32,7 @@ class SpeedrunApi:
         game: str,
         category: str,
         subcategories: Mapping[str, str] = None,
-        as_of: str = None,
+        as_of: datetime.datetime = None,
     ):
 
         stringified_subcategories = (
@@ -56,7 +56,7 @@ class SpeedrunApi:
             params.append(stringified_subcategories)
 
         if as_of:
-            params.append(f"date={as_of}")
+            params.append(f"date={as_of.isoformat()}")
 
         url = f"https://www.speedrun.com/api/v1/leaderboards/{game}/category/{category}{('?' + '&'.join(params)) if params else ''}"
         logger.info(url)

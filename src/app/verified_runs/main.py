@@ -70,6 +70,7 @@ class WatchedLeaderboard:
 
             await self.channel.send(embed=parsed_run.to_embed())
             already_posted_runs.append(parsed_run.run_from_api.id)
+            self.get_since = parsed_run.date_verified
 
             try:
                 with open(
@@ -79,7 +80,6 @@ class WatchedLeaderboard:
             except Exception:
                 print("Failed to save already posted runs!")
 
-        self.get_since = datetime.datetime.now(datetime.timezone.utc)
 
     async def start_watching(self):
         while True:
