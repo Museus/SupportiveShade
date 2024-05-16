@@ -70,12 +70,19 @@ class VerifiedRun:
             if variable_id in leaderboard_subcategories.keys()
         ]
 
-        leaderboard = src_api.get_leaderboard(
-            game=self.game,
-            category=self.category_id,
-            subcategories=self._subcategories,
-            as_of=self.date_verified,
-        )
+        attempts = 0
+        while attempts < 5:
+            try:
+                leaderboard = src_api.get_leaderboard(
+                    game=self.game,
+                    category=self.category_id,
+                    subcategories=self._subcategories,
+                    as_of=self.date_verified,
+                )
+            except Exception:
+                attempts += 1
+            else:
+                break
 
         for idx, run in enumerate(leaderboard):
             if run["run"]["id"] == self.run_from_api.id:
