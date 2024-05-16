@@ -118,13 +118,6 @@ class LeaderboardWatcher:
             game_name, src_id, channel_id, poll_frequency, start_timestamp
         )
         self.watched_leaderboards[game_name] = new_board
-        await new_board.channel.send(
-            f"Back online! Now watching for new {game_name} runs!"
-        )
-        if include_history:
-            await new_board.channel.send(
-                f"This channel will also contain all previous {game_name} runs!"
-            )
 
         return new_board
 
