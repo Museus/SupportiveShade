@@ -1,13 +1,11 @@
-
-
 services:
-    bot:
-        image: "supportive-shade"
-        build: "../src"
+  bot:
+    image: "supportive-shade"
+    build: "../src"
 
-        env_file:
-            - path: ./.env
-              required: true
+    env_file:
+      - path: ./.env
+        required: true
 
-        volumes:
-          - ./config.toml:/etc/supportive_shade/config.toml
+    volumes:
+      - ./config.json:/app/config.json
