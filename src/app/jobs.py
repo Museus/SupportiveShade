@@ -1,16 +1,13 @@
 from abc import ABC, abstractmethod
 from discord import Emoji, Message, TextChannel
-import logging
+from log_util import logger
 import re
 
 from client import client
 from settings import PersonalBestsSettings
 
-logger = logging.getLogger("discord")
-
 
 class Watcher(ABC):
-
     @abstractmethod
     def should_act(self, message: Message) -> bool:
         pass

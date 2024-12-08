@@ -8,4 +8,4 @@ services:
         required: true
 
     volumes:
-      - ./config.json:/app/config.json
+      - ./config.toml:/app/config.toml

@@ -17,7 +17,7 @@ class PersonalBestsSettings(BaseModel):
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(toml_file="/etc/supportive_shade/config.toml")
+    model_config = SettingsConfigDict(toml_file="/app/config.toml")
 
     personal_bests: list[PersonalBestsSettings]
 

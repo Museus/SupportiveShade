@@ -1,4 +1,4 @@
-FROM python:3-slim
+FROM python:3.12-slim
 
 # Use Bash as shell
 SHELL ["/bin/bash", "-c"]
@@ -10,8 +10,8 @@ RUN useradd -ms /bin/bash deploy
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install all system requirements
-COPY ./system-requirements.txt ./system-requirements.txt
-RUN apt-get update && apt-get install -y $(cat ./system-requirements.txt)
+# COPY ./system-requirements.txt ./system-requirements.txt
+# RUN apt-get update && apt-get install -y $(cat ./system-requirements.txt)
 
 # Install all Python requirements
 COPY ./python-requirements.txt ./python-requirements.txt
