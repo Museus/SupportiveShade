@@ -13,22 +13,31 @@ tasks:
       - sudo echo "test" > /dev/null
     silent: true
 
+  _registry_auth:
+    cmds:
+      - echo "Confirming you have authenticated with the registry..."
+      - sudo docker login ghcr.io/museus
+    silent: true
+
   build:
     dir: deploy
-    deps: [_require_sudo]
     vars:
       TIMESTAMP:
         sh: "date --rfc-3339='seconds' --utc"
+    sources:
+      - ../src
     cmds:
+      - task: _require_sudo
       - printf '\nBuilding {{ .VERSION }} at {{ .TIMESTAMP }}\n\n'
       - sudo BUILD_VERSION="{{ .VERSION }}" docker compose build --build-arg BUILD_TIMESTAMP="{{ .TIMESTAMP }}"
-    silent: true
 
   push:
     dir: deploy
-    deps: [_require_sudo]
     cmds:
-      - sudo docker compose push
+      - task: _require_sudo
+      - task: _registry_auth
+      - task: build
+      - sudo BUILD_VERSION="{{ .VERSION }}" docker compose push
     silent: true
 
   inspect:
