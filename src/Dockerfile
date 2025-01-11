@@ -9,10 +9,6 @@ RUN useradd -ms /bin/bash deploy
 # silence Dialog TERM not set errors in apt-get install
 ENV DEBIAN_FRONTEND noninteractive
 
-# Install all system requirements
-# COPY ./system-requirements.txt ./system-requirements.txt
-# RUN apt-get update && apt-get install -y $(cat ./system-requirements.txt)
-
 # Install all Python requirements
 COPY ./python-requirements.txt ./python-requirements.txt
 RUN python3 -m venv venv && \
@@ -34,10 +30,10 @@ LABEL org.opencontainers.image.created="${BUILD_TIMESTAMP}"
 LABEL org.opencontainers.image.authors="Museus <museus@proton.me>"
 LABEL org.opencontainers.image.url=""
 LABEL org.opencontainers.image.documentation=""
-LABEL org.opencontainers.image.source=""
-LABEL org.opencontainers.image.version="v${BUILD_VERSION}"
-LABEL org.opencontainers.image.vendor=""
-LABEL org.opencontainers.image.title=""
-LABEL org.opencontainers.image.description=""
+LABEL org.opencontainers.image.source="https://github.com/Museus/SupportiveShade"
+LABEL org.opencontainers.image.version="${BUILD_VERSION}"
+LABEL org.opencontainers.image.vendor="Museus"
+LABEL org.opencontainers.image.title="Supportive Shade"
+LABEL org.opencontainers.image.description="An extendable discord bot to manage simple speedrun server flows."
 
 ENTRYPOINT ["bash", "-c", "./start.sh"]

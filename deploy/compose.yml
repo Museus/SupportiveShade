@@ -1,7 +1,12 @@
 services:
   bot:
-    image: "supportive-shade"
-    build: "../src"
+    image: "ghcr.io/museus/supportiveshade:${BUILD_VERSION}"
+    build:
+      context: "../src"
+      args:
+        - BUILD_VERSION=$BUILD_VERSION
+      tags:
+        - "ghcr.io/museus/supportiveshade:latest"
 
     env_file:
       - path: ./.env

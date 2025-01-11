@@ -1,0 +1,37 @@
+version: '3'
+
+vars:
+  VERSION:
+    sh: git describe --tags
+  TIMESTAMP:
+    sh: "date --rfc-3339='seconds' --utc"
+
+tasks:
+  _require_sudo:
+    cmds:
+      - echo "Confirming you have sudo privileges..."
+      - sudo echo "test" > /dev/null
+    silent: true
+
+  build:
+    dir: deploy
+    deps: [_require_sudo]
+    vars:
+      TIMESTAMP:
+        sh: "date --rfc-3339='seconds' --utc"
+    cmds:
+      - printf '\nBuilding {{ .VERSION }} at {{ .TIMESTAMP }}\n\n'
+      - sudo BUILD_VERSION="{{ .VERSION }}" docker compose build --build-arg BUILD_TIMESTAMP="{{ .TIMESTAMP }}"
+    silent: true
+
+  push:
+    dir: deploy
+    deps: [_require_sudo]
+    cmds:
+      - sudo docker compose push
+    silent: true
+
+  inspect:
+    deps: [_require_sudo]
+    cmds:
+      - sudo docker inspect ghcr.io/museus/supportiveshade:latest
