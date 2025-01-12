@@ -44,3 +44,8 @@ tasks:
     deps: [_require_sudo]
     cmds:
       - sudo docker inspect ghcr.io/museus/supportiveshade:latest
+
+  deploy:
+    dir: deploy
+    cmds:
+      - sudo BUILD_VERSION="{{ .VERSION }}" docker compose up -d
