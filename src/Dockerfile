@@ -3,9 +3,6 @@ FROM python:3.12-slim
 # Use Bash as shell
 SHELL ["/bin/bash", "-c"]
 
-# Create deploy user
-RUN useradd -ms /bin/bash deploy
-
 # silence Dialog TERM not set errors in apt-get install
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -16,11 +13,11 @@ RUN python3 -m venv venv && \
     pip install --upgrade pip && \
     pip install --ignore-installed -r python-requirements.txt
 
+# Copy application
+COPY ./app /
+
 # Set context for entrypoint
 WORKDIR /app
-
-# Copy application
-COPY ./app/* .
 
 # Set metadata as specified by https://github.com/opencontainers/image-spec/blob/main/annotations.md
 ARG BUILD_TIMESTAMP="unknown"
