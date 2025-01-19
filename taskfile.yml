@@ -24,8 +24,8 @@ tasks:
     vars:
       TIMESTAMP:
         sh: "date --rfc-3339='seconds' --utc"
-    # sources:
-    #   - ../src
+    sources:
+      - ../src
     cmds:
       - echo ''
       - task: _require_sudo
