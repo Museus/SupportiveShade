@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-c"]
 RUN useradd -ms /bin/bash deploy
 
 # silence Dialog TERM not set errors in apt-get install
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install all Python requirements
 COPY ./python-requirements.txt ./python-requirements.txt

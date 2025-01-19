@@ -20,16 +20,18 @@ tasks:
     silent: true
 
   build:
-    dir: deploy
+    dir: src/
     vars:
       TIMESTAMP:
         sh: "date --rfc-3339='seconds' --utc"
-    sources:
-      - ../src
+    # sources:
+    #   - ../src
     cmds:
+      - echo ''
       - task: _require_sudo
-      - printf '\nBuilding {{ .VERSION }} at {{ .TIMESTAMP }}\n\n'
-      - sudo BUILD_VERSION="{{ .VERSION }}" docker compose build --build-arg BUILD_TIMESTAMP="{{ .TIMESTAMP }}"
+      - printf 'Building {{ .VERSION }} at {{ .TIMESTAMP }}\n\n'
+      - sudo BUILD_TIMESTAMP="{{ .TIMESTAMP }}" BUILD_VERSION="{{ .VERSION }}" docker buildx bake
+    silent: true
 
   push:
     dir: deploy
@@ -44,8 +46,3 @@ tasks:
     deps: [_require_sudo]
     cmds:
       - sudo docker inspect ghcr.io/museus/supportiveshade:latest
-
-  deploy:
-    dir: deploy
-    cmds:
-      - sudo BUILD_VERSION="{{ .VERSION }}" docker compose up -d
