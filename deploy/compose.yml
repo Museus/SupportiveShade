@@ -1,16 +1,5 @@
 services:
   bot:
     image: "ghcr.io/museus/supportiveshade:${BUILD_VERSION}"
-    build:
-      context: "../src"
-      args:
-        - BUILD_VERSION=$BUILD_VERSION
-      tags:
-        - "ghcr.io/museus/supportiveshade:latest"
-
-    env_file:
-      - path: ./.env
-        required: true
-
     volumes:
       - ./config.toml:/app/config.toml
