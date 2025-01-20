@@ -13,7 +13,7 @@ variable "BUILD_TIMESTAMP" {
 }
 
 target "bot" {
-  context = "."
+  context = "src"
   dockerfile = "Dockerfile"
   args = {
     BUILD_VERSION="${BUILD_VERSION}",
