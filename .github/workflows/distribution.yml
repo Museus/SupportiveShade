@@ -18,7 +18,18 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       -
+        name: Git describe
+        id: ghd
+        uses: proudust/gh-describe@v2
+      -
+        name: Get build timestamp
+        id: timestamp
+        run: echo "timestamp=$(date --rfc-3339='seconds' --utc)" >> "$GITHUB_OUTPUT"
+      -
         name: Build and push
         uses: docker/bake-action@v6
         with:
           push: true
+        env:
+          BUILD_VERSION: ${{ steps.ghd.outputs.describe }}
+          BUILD_TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
