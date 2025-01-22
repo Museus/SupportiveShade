@@ -8,7 +8,7 @@ variable "BUILD_VERSION" {
 }
 
 variable "COMMIT_SHA" {
-  # Provide with `git rev-parse --short=8 HEAD`
+  # Provide with `git rev-parse HEAD`
   default="Unknown"
 }
 

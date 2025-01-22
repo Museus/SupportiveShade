@@ -26,7 +26,7 @@ tasks:
       BRANCH_NAME:
         sh: "git rev-parse --abbrev-ref HEAD"
       COMMIT_SHA:
-        sh: "git rev-parse --short=8 HEAD"
+        sh: "git rev-parse HEAD"
 
           #sources:
           #      - ../src
