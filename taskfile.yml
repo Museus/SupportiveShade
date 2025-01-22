@@ -20,17 +20,21 @@ tasks:
     silent: true
 
   build:
-    dir: src/
     vars:
       TIMESTAMP:
         sh: "date --rfc-3339='seconds' --utc"
-    sources:
-      - ../src
+      BRANCH_NAME:
+        sh: "git rev-parse --abbrev-ref HEAD"
+      COMMIT_SHA:
+        sh: "git rev-parse --short=8 HEAD"
+
+          #sources:
+          #      - ../src
     cmds:
       - echo ''
       - task: _require_sudo
-      - printf 'Building {{ .VERSION }} at {{ .TIMESTAMP }}\n\n'
-      - sudo BUILD_TIMESTAMP="{{ .TIMESTAMP }}" BUILD_VERSION="{{ .VERSION }}" docker buildx bake
+      - printf 'Building {{ .BRANCH_NAME }}-{{ .VERSION }} at {{ .TIMESTAMP }}\n\n'
+      - sudo BRANCH_NAME="{{ .BRANCH_NAME }}" COMMIT_SHA="{{ .COMMIT_SHA }}" BUILD_TIMESTAMP="{{ .TIMESTAMP }}" BUILD_VERSION="{{ .VERSION }}" docker buildx bake
     silent: true
 
   push:

@@ -31,5 +31,6 @@ jobs:
         with:
           push: true
         env:
+          BRANCH_NAME: ${{ $GITHUB_REF_NAME }}
           BUILD_VERSION: ${{ steps.ghd.outputs.describe }}
           BUILD_TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
