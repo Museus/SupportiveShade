@@ -1,0 +1,52 @@
+version: '3'
+
+vars:
+  VERSION:
+    sh: git describe --tags
+  TIMESTAMP:
+    sh: "date --rfc-3339='seconds' --utc"
+
+tasks:
+  _require_sudo:
+    cmds:
+      - echo "Confirming you have sudo privileges..."
+      - sudo echo "test" > /dev/null
+    silent: true
+
+  _registry_auth:
+    cmds:
+      - echo "Confirming you have authenticated with the registry..."
+      - sudo docker login ghcr.io/museus
+    silent: true
+
+  build:
+    vars:
+      TIMESTAMP:
+        sh: "date --rfc-3339='seconds' --utc"
+      BRANCH_NAME:
+        sh: "git rev-parse --abbrev-ref HEAD"
+      COMMIT_SHA:
+        sh: "git rev-parse HEAD"
+
+          #sources:
+          #      - ../src
+    cmds:
+      - echo ''
+      - task: _require_sudo
+      - printf 'Building {{ .BRANCH_NAME }}-{{ .VERSION }} at {{ .TIMESTAMP }}\n\n'
+      - sudo BRANCH_NAME="{{ .BRANCH_NAME }}" COMMIT_SHA="{{ .COMMIT_SHA }}" BUILD_TIMESTAMP="{{ .TIMESTAMP }}" BUILD_VERSION="{{ .VERSION }}" docker buildx bake
+    silent: true
+
+  push:
+    dir: deploy
+    cmds:
+      - task: _require_sudo
+      - task: _registry_auth
+      - task: build
+      - sudo BUILD_VERSION="{{ .VERSION }}" docker compose push
+    silent: true
+
+  inspect:
+    deps: [_require_sudo]
+    cmds:
+      - sudo docker inspect ghcr.io/museus/supportiveshade:latest

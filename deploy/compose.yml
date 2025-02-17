@@ -1,13 +1,5 @@
-
-
 services:
-    bot:
-        image: "supportive-shade"
-        build: "../src"
-
-        env_file:
-            - path: ./.env
-              required: true
-
-        volumes:
-          - ./config.toml:/etc/supportive_shade/config.toml
+  bot:
+    image: "ghcr.io/museus/supportiveshade:${BUILD_VERSION}"
+    volumes:
+      - ./config.toml:/app/config.toml

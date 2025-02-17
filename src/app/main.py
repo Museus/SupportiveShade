@@ -1,14 +1,13 @@
-import logging
 import os
 
 from discord import Message
 
 from client import client
 from jobs import Watcher, HandlePersonalBest
+from log_util import logger
 from settings import settings
 
 
-logger = logging.getLogger("discord")
 hooks: list[Watcher] = []
 
 
@@ -47,5 +46,6 @@ async def on_message(message: Message):
     for hook in hooks:
         if hook.should_act(message):
             await hook.act(message)
+
 
 client.run(token=os.getenv("API_TOKEN"))
