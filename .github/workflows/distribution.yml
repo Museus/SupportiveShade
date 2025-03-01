@@ -29,7 +29,6 @@ jobs:
         name: Get escaped branch name
         id: escape-branch
         run: |
-             echo "branch_name=$(echo ${{ github.ref_name }} | sed 's/\//-/g')"
              echo "branch_name=$(echo ${{ github.ref_name }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       -
         name: Build and push
