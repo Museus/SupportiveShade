@@ -24,7 +24,7 @@ tasks:
       TIMESTAMP:
         sh: "date --rfc-3339='seconds' --utc"
       BRANCH_NAME:
-        sh: "git rev-parse --abbrev-ref HEAD"
+        sh: 'git rev-parse --abbrev-ref HEAD | sed "s/\//-/g"'
       COMMIT_SHA:
         sh: "git rev-parse HEAD"
 
@@ -50,3 +50,9 @@ tasks:
     deps: [_require_sudo]
     cmds:
       - sudo docker inspect ghcr.io/museus/supportiveshade:latest
+
+  run:
+    deps: [build]
+    dir: deploy
+    cmds:
+      - sudo BUILD_VERSION="{{ .VERSION }}" docker compose up
