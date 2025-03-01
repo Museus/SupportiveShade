@@ -1,5 +1,7 @@
 services:
   bot:
     image: "ghcr.io/museus/supportiveshade:${BUILD_VERSION}"
+    env_file:
+      - ./.env
     volumes:
       - ./config.toml:/app/config.toml

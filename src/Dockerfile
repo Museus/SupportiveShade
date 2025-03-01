@@ -6,6 +6,9 @@ SHELL ["/bin/bash", "-c"]
 # silence Dialog TERM not set errors in apt-get install
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Set Containerized environment variable for conditional behavior in application
+ENV IS_CONTAINER=true
+
 # Install all Python requirements
 COPY ./python-requirements.txt ./python-requirements.txt
 RUN python3 -m venv venv && \
@@ -14,7 +17,7 @@ RUN python3 -m venv venv && \
     pip install --ignore-installed -r python-requirements.txt
 
 # Copy application
-COPY ./app /
+COPY ./app /app
 
 # Set context for entrypoint
 WORKDIR /app

@@ -1,5 +1,3 @@
-import os
-
 from discord import Message
 
 from client import client
@@ -48,4 +46,4 @@ async def on_message(message: Message):
             await hook.act(message)
 
 
-client.run(token=os.getenv("API_TOKEN"))
+client.run(token=settings.api_token)
