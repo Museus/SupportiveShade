@@ -26,12 +26,17 @@ jobs:
         id: timestamp
         run: echo "timestamp=$(date --rfc-3339='seconds' --utc)" >> "$GITHUB_OUTPUT"
       -
+        name: Get escaped branch name
+        id: escape-branch
+        run: echo "branch_name=${{ github.ref_name }} | sed 's/\//-/g'" >> "$GITHUB_OUTPUT"
+
+      -
         name: Build and push
         uses: docker/bake-action@v6
         with:
           push: true
         env:
-          BRANCH_NAME: ${{ github.ref_name }}
+          BRANCH_NAME: ${{ steps.escape-branch.outputs.branch_name }}
           COMMIT_SHA: ${{ github.sha }}
           BUILD_VERSION: ${{ steps.ghd.outputs.describe }}
           BUILD_TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}

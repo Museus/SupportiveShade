@@ -24,7 +24,7 @@ tasks:
       TIMESTAMP:
         sh: "date --rfc-3339='seconds' --utc"
       BRANCH_NAME:
-        sh: "git rev-parse --abbrev-ref HEAD"
+        sh: 'git rev-parse --abbrev-ref HEAD | sed "s/\//-/g"'
       COMMIT_SHA:
         sh: "git rev-parse HEAD"
 
